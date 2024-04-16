@@ -109,6 +109,15 @@ def writeFilterRule(p4info_helper, sw, src_ip_addr, src_port):
     #       match what is specified in the P4 
     #       program.
     
+    table_entry1 = p4info_helper.buildTableEntry(
+        table_name="MyIngress.match_susp",
+        match_fields={
+            "hdr.ipv4.srcAddr": (src_ip_addr)
+            "hdr.udp.srcPort": (src_port)
+        },
+        action_name="MyIngress.set_filter"
+        )
+    sw.WriteTableEntry(table_entry1)
     print("Installed filter rule for (%s, %d) on %s" % (src_ip_addr, src_port, sw.name))
 
 def writeAllFilterRules(p4info_helper, sw_list):

@@ -41,8 +41,8 @@ header  filter_t{
      bit<8> proto;
 }
 header udp_t{
-    bit<16> srcPort;
-    bit<16> dstPort;
+    bit<8> srcPort;
+    bit<8> dstPort;
     bit<16> pkt_length;
     bit<16> checksum;
 }

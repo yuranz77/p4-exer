@@ -99,13 +99,14 @@ parser MyParser(packet_in packet,
              the UDP header
     */
     state filter_header{
-       packet.extract(hdr.udp);
-       transition select(hdr.udp.srcPort){
+       packet.extract(hdr.filter);
+       transition select(hdr.filter.proto){
             PROTO_UDP: parse_udp;
             default:accept;
         }
     }
     state parse_udp{
+        packet.extract(hdr.udp);
         transition accept;
     }
 }

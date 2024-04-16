@@ -112,7 +112,7 @@ def writeFilterRule(p4info_helper, sw, src_ip_addr, src_port):
     table_entry1 = p4info_helper.buildTableEntry(
         table_name="MyIngress.match_susp",
         match_fields={
-            "hdr.ipv4.srcAddr": (src_ip_addr)
+            "hdr.ipv4.srcAddr": (src_ip_addr),
             "hdr.udp.srcPort": (src_port)
         },
         action_name="MyIngress.set_filter"

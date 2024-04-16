@@ -36,7 +36,16 @@ header ipv4_t {
 }
 
 // TODO: Define the filter and UDP headers here.
-
+header  filter_t{
+     bit<8> susp;
+     bit<8> proto;
+}
+header udp_t{
+    bit<16> srcPort;
+    bit<16> dstPort;
+    bit<16> pkt_length;
+    bit<16> checksum;
+}
 struct metadata {
     /* empty */
 }
@@ -45,7 +54,10 @@ struct headers {
     ethernet_t   ethernet;
     ipv4_t       ipv4;
 
+
     // TODO: instantiate the filter and udp headers here
+    filter_t     filter;
+    udp_t        udp;
 }
 
 /*************************************************************************
@@ -75,12 +87,26 @@ parser MyParser(packet_in packet,
                  filter header or accept depending
                  on hdr.ipv4.protocol
         */ 
+        transition select(hdr.ipv4.protocol){
+            PROTO_FILTER: filter_header;
+            default:accept;
+        }
+        
     }
 
     /* TODO: add two parser states, one for parsing
              the filter header and one for parsing
              the UDP header
     */
+    state filter_header{
+       transition select(hdr.udp.srcPort){
+            PROTO_UDP: parse_udp;
+            default:accept;
+        }
+    }
+    state parse_udp{
+        transition accept;
+    }
 }
 
 /*************************************************************************
@@ -102,13 +128,29 @@ control MyIngress(inout headers hdr,
 
     /* TODO: define an action to set the
              susp field in the filter header
-    */      
+    */     
+    action set_filter() {
+        hdr.filter.susp = 1;
+    } 
 
     /* TODO: define a table that matches on
              source IP address and UDP source
              port, and applies the above actions
              as an option
     */
+
+    table match_susp {
+        key = {
+            hdr.ipv4.srcAddr: exact;
+            hdr.udp.srcPort: exact;
+        }
+        actions = {
+            set_filter;
+            NoAction;
+        }
+        size = 1024;
+        default_action = NoAction();
+    }
 
     action drop() {
         mark_to_drop(standard_metadata);
@@ -141,7 +183,12 @@ control MyIngress(inout headers hdr,
                      have been parsed. If yes, apply
                      the filter table
             */
-
+            if (hdr.filter.isValid()){
+                if hdr.udp.isValid(){
+                    match_susp.apply();
+                }
+            }
+            
             ipv4_exact.apply();
         }
     }
@@ -193,6 +240,8 @@ control MyDeparser(packet_out packet, in headers hdr) {
                  to emit the filter and udp
                  headers as well
         */
+        packet.emit(hdr.filter);
+        packet.emit(hdr.udp);
     }
 }
 

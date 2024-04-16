@@ -99,6 +99,7 @@ parser MyParser(packet_in packet,
              the UDP header
     */
     state filter_header{
+       packet.extract(hdr.udp);
        transition select(hdr.udp.srcPort){
             PROTO_UDP: parse_udp;
             default:accept;
@@ -184,7 +185,7 @@ control MyIngress(inout headers hdr,
                      the filter table
             */
             if (hdr.filter.isValid()){
-                if hdr.udp.isValid(){
+                if (hdr.udp.isValid()){
                     match_susp.apply();
                 }
             }

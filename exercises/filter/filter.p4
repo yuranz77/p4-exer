@@ -43,8 +43,8 @@ header  filter_t{
 header udp_t{
     bit<8> srcPort;
     bit<8> dstPort;
-    bit<16> pkt_length;
-    bit<16> checksum;
+    bit<8> pkt_length;
+    bit<8> checksum;
 }
 struct metadata {
     /* empty */
